@@ -1,4 +1,4 @@
-const CACHE_NAME = "bowling-practice-pwa-v7";
+const CACHE_NAME = "bowling-practice-pwa-v8";
 const CORE_ASSETS = [
   "./",
   "./index.html",

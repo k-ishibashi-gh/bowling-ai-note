@@ -149,9 +149,14 @@ button {
   line-height: 1.2;
 }
 
+.home-hero h2 span {
+  display: block;
+  white-space: nowrap;
+}
+
 .score-badge {
-  display: grid;
-  place-items: center;
+  position: relative;
+  display: block;
   flex: 0 0 94px;
   min-height: 94px;
   background: var(--brand);
@@ -162,6 +167,10 @@ button {
 
 .score-badge span {
   display: block;
+  position: absolute;
+  top: 46%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   font-size: 1.45rem;
   font-weight: 800;
   line-height: 1;
@@ -169,8 +178,13 @@ button {
 
 .score-badge small {
   display: block;
-  margin-top: 4px;
+  position: absolute;
+  top: 69%;
+  left: 50%;
+  transform: translateX(-50%);
   font-size: 0.75rem;
+  line-height: 1;
+  white-space: nowrap;
 }
 
 .home-grid {
@@ -866,6 +880,18 @@ button {
   .score-badge {
     flex-basis: 82px;
     min-height: 82px;
+  }
+
+  .home-hero h2 {
+    font-size: 1.5rem;
+  }
+
+  .score-badge span {
+    font-size: 1.25rem;
+  }
+
+  .score-badge small {
+    font-size: 0.64rem;
   }
 
   .menu-button {
