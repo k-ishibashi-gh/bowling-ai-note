@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="theme-color" content="#0f766e">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-title" content="ボウリング練習">
+    <meta name="apple-mobile-web-app-title" content="AIボウリングコーチ">
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-eval' 'wasm-unsafe-eval'; worker-src 'self'; connect-src 'self'; img-src 'self' blob: data:; style-src 'self' 'unsafe-inline'; manifest-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
-    <title>ボウリング練習ノート</title>
+    <title>AIボウリングコーチ</title>
     <link rel="manifest" href="./manifest.json">
     <link rel="icon" href="./icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="./icon-192.png">
@@ -17,42 +17,26 @@
   </head>
   <body>
     <header class="app-header">
-      <div>
-        <p class="eyebrow">スマホ練習メモ</p>
-        <h1>ボウリング練習ノート</h1>
+      <div class="app-brand">
+        <h1>AIボウリングコーチ🎳</h1>
       </div>
-      <button class="icon-button" type="button" data-nav="home" aria-label="ホームへ">⌂</button>
+      <div class="header-actions">
+        <button class="icon-button" type="button" data-nav="home" aria-label="ホームへ">⌂</button>
+        <button class="icon-button" type="button" data-nav="help" aria-label="ヘルプを開く">?</button>
+      </div>
     </header>
 
     <main id="app">
       <section class="screen is-active" id="home-screen" data-screen="home" aria-labelledby="home-title">
         <div class="home-hero">
           <div>
-            <p class="eyebrow">今日の投球を残して、次の練習につなげる</p>
-            <h2 id="home-title">何をしますか？</h2>
+            <p class="eyebrow">あなたのボウリングライフを、AIコーチがサポート</p>
+            <h2 id="home-title">今日の投球内容を記録しましょう！</h2>
           </div>
           <div class="score-badge">
             <span id="home-average">--</span>
             <small>平均</small>
           </div>
-        </div>
-
-        <div class="home-notices">
-          <section class="info-panel" id="backup-reminder" hidden>
-            <div>
-              <h3>JSONバックアップをおすすめします</h3>
-              <p>記録はこの端末のブラウザ内に保存されます。機種変更やブラウザ整理の前に、JSONを保存してください。</p>
-            </div>
-            <div class="notice-actions">
-              <button class="secondary-action" type="button" data-nav="backup">バックアップへ</button>
-              <button class="small-button" type="button" id="dismiss-backup-reminder">あとで</button>
-            </div>
-          </section>
-
-          <details class="info-panel install-guide">
-            <summary>ホーム画面に追加する</summary>
-            <p>iPhoneはSafariの共有ボタンから「ホーム画面に追加」。AndroidはChromeのメニューから「アプリをインストール」または「ホーム画面に追加」を選びます。</p>
-          </details>
         </div>
 
         <div class="home-grid" aria-label="メニュー">
@@ -88,6 +72,56 @@
             <span>バックアップ</span>
             <small>CSV / JSONで保存・復元</small>
           </button>
+        </div>
+      </section>
+
+      <section class="screen" id="help-screen" data-screen="help" aria-labelledby="help-title">
+        <div class="screen-title">
+          <button class="back-button" type="button" data-nav="home">戻る</button>
+          <h2 id="help-title">ヘルプ</h2>
+        </div>
+
+        <div class="help-list">
+          <section class="help-card">
+            <h3>このアプリでできること</h3>
+            <p>練習スコア、残ったピン、ミス傾向、使ったボール、メモをスマホだけで残せます。保存した記録から、ChatGPTに貼り付ける相談文も作れます。</p>
+          </section>
+
+          <section class="help-card">
+            <h3>基本の使い方</h3>
+            <ol>
+              <li>ホームの「今日の記録」を開きます。</li>
+              <li>スコア、残ったピン、調子を選びます。</li>
+              <li>「保存」を押すと履歴に残ります。</li>
+              <li>相談したい時は「AIに相談」で文章を作り、ChatGPTに貼り付けます。</li>
+            </ol>
+          </section>
+
+          <section class="help-card">
+            <h3>データの保存場所</h3>
+            <p>記録はこのスマホのブラウザ内に保存されます。サーバー、ログイン、OpenAI APIは使いません。スマホのサイトデータを消すと記録も消えることがあります。</p>
+          </section>
+
+          <section class="help-card">
+            <h3>ホーム画面に追加する</h3>
+            <p>iPhoneはSafariで開き、共有ボタンから「ホーム画面に追加」を選びます。AndroidはChromeのメニューから「アプリをインストール」または「ホーム画面に追加」を選びます。</p>
+          </section>
+
+          <section class="help-card">
+            <h3>バックアップのすすめ</h3>
+            <p>機種変更、ブラウザ整理、GitHub PagesのURL変更の前には、JSONバックアップを保存してください。CSVは表で見やすい形式、JSONは復元に向いた形式です。</p>
+            <button class="secondary-action full" type="button" data-nav="backup">バックアップ画面を開く</button>
+          </section>
+
+          <section class="help-card">
+            <h3>画像読み取りがうまくいかない時</h3>
+            <p>スコアシートの読み取り結果は保存前に直せます。うまく読めない時は、OCR画面の「手入力で記録する」からいつでも手入力に戻れます。</p>
+          </section>
+
+          <section class="help-card">
+            <h3>AI相談の使い方</h3>
+            <p>このアプリは相談文を作るだけです。生成された文章をコピーして、ChatGPTに貼り付けてください。返ってきたアドバイスは「AIコーチコメント」として記録に保存できます。</p>
+          </section>
         </div>
       </section>
 
@@ -455,13 +489,13 @@
     <section class="welcome-modal" id="welcome-modal" hidden aria-labelledby="welcome-title" role="dialog" aria-modal="true">
       <div class="welcome-card">
         <p class="eyebrow">はじめに</p>
-        <h2 id="welcome-title">このアプリの使い方</h2>
+        <h2 id="welcome-title">AIボウリングコーチの使い方</h2>
         <div class="welcome-steps">
           <p><strong>1. 今日の記録</strong><br>スコア、残ったピン、調子を保存します。</p>
           <p><strong>2. AIに相談</strong><br>ChatGPTに貼り付ける文章を作れます。</p>
           <p><strong>3. バックアップ</strong><br>記録は端末内に保存されます。時々JSONで保存してください。</p>
         </div>
-        <p class="hint">ホーム画面に追加すると、スマホアプリのように開けます。</p>
+        <p class="hint">詳しい使い方は、上部の「?」ボタンからいつでも確認できます。</p>
         <button class="main-action full" type="button" id="close-welcome">使い始める</button>
       </div>
     </section>

@@ -65,10 +65,21 @@ button {
   backdrop-filter: blur(14px);
 }
 
+.app-brand {
+  min-width: 0;
+}
+
+.header-actions {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 8px;
+}
+
 .app-header h1,
 .screen h2,
 .panel h3,
-.guide-list h3 {
+.guide-list h3,
+.help-card h3 {
   margin: 0;
   letter-spacing: 0;
 }
@@ -106,6 +117,7 @@ button {
   color: var(--brand-dark);
   border: 1px solid var(--line);
   font-size: 1.25rem;
+  font-weight: 900;
   box-shadow: 0 3px 10px rgba(12, 53, 48, 0.06);
 }
 
@@ -167,48 +179,6 @@ button {
   gap: 12px;
 }
 
-.home-notices {
-  display: grid;
-  gap: 12px;
-  margin: 0 0 14px;
-}
-
-.info-panel {
-  display: grid;
-  gap: 10px;
-  padding: 14px;
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  box-shadow: 0 5px 18px rgba(12, 53, 48, 0.06);
-}
-
-.info-panel h3,
-.info-panel p {
-  margin: 0;
-}
-
-.info-panel h3 {
-  font-size: 1rem;
-}
-
-.info-panel p {
-  color: var(--muted);
-  font-weight: 700;
-}
-
-.info-panel summary {
-  color: var(--brand-dark);
-  cursor: pointer;
-  font-weight: 900;
-}
-
-.notice-actions {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 10px;
-}
-
 .menu-button {
   display: flex;
   align-items: center;
@@ -250,6 +220,38 @@ button {
 
 .screen-title h2 {
   font-size: 1.55rem;
+}
+
+.help-list {
+  display: grid;
+  gap: 12px;
+}
+
+.help-card {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.help-card h3 {
+  color: var(--brand-dark);
+  font-size: 1.05rem;
+}
+
+.help-card p,
+.help-card ol {
+  margin: 0;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.help-card ol {
+  display: grid;
+  gap: 8px;
+  padding-left: 1.35rem;
 }
 
 .back-button,

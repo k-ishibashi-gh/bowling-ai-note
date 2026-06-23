@@ -1,6 +1,6 @@
 {
-  "name": "ボウリング練習ノート",
-  "short_name": "練習ノート",
+  "name": "AIボウリングコーチ",
+  "short_name": "AIコーチ",
   "description": "ボウリング練習をスマホで記録し、ChatGPT相談文を作るPWAです。",
   "start_url": "./",
   "scope": "./",

@@ -2,8 +2,7 @@ const STORAGE_KEYS = {
   records: "bowlingPracticeRecords:v1",
   balls: "bowlingPracticeBalls:v1",
   introSeen: "bowlingPracticeIntroSeen:v1",
-  lastJsonBackupAt: "bowlingPracticeLastJsonBackupAt:v1",
-  backupReminderDismissedOn: "bowlingPracticeBackupReminderDismissedOn:v1"
+  lastJsonBackupAt: "bowlingPracticeLastJsonBackupAt:v1"
 };
 
 const TESSERACT_LOCAL_PATHS = {
@@ -132,7 +131,6 @@ function bindEvents() {
   });
   document.getElementById("restore-data").addEventListener("click", restoreData);
   document.getElementById("close-welcome").addEventListener("click", closeWelcome);
-  document.getElementById("dismiss-backup-reminder").addEventListener("click", dismissBackupReminder);
 }
 
 function loadState() {
@@ -485,7 +483,6 @@ function renderVenueOptions() {
 function renderHome() {
   const allScores = state.records.flatMap((record) => record.scores);
   document.getElementById("home-average").textContent = allScores.length ? Math.round(average(allScores)) : "--";
-  document.getElementById("backup-reminder").hidden = !shouldShowBackupReminder();
 }
 
 function showWelcomeIfNeeded() {
@@ -496,26 +493,6 @@ function showWelcomeIfNeeded() {
 function closeWelcome() {
   localStorage.setItem(STORAGE_KEYS.introSeen, "1");
   document.getElementById("welcome-modal").hidden = true;
-}
-
-function shouldShowBackupReminder() {
-  if (!state.records.length) return false;
-  if (localStorage.getItem(STORAGE_KEYS.backupReminderDismissedOn) === todayString()) return false;
-  const lastBackup = localStorage.getItem(STORAGE_KEYS.lastJsonBackupAt);
-  if (!lastBackup) return true;
-  return daysBetween(lastBackup, todayString()) >= 14;
-}
-
-function dismissBackupReminder() {
-  localStorage.setItem(STORAGE_KEYS.backupReminderDismissedOn, todayString());
-  renderHome();
-}
-
-function daysBetween(fromDate, toDate) {
-  const from = new Date(`${fromDate}T00:00:00`);
-  const to = new Date(`${toDate}T00:00:00`);
-  if (Number.isNaN(from.getTime()) || Number.isNaN(to.getTime())) return 999;
-  return Math.floor((to - from) / 86400000);
 }
 
 function renderHistory() {
