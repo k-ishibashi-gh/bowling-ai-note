@@ -37,6 +37,24 @@
           </div>
         </div>
 
+        <div class="home-notices">
+          <section class="info-panel" id="backup-reminder" hidden>
+            <div>
+              <h3>JSONバックアップをおすすめします</h3>
+              <p>記録はこの端末のブラウザ内に保存されます。機種変更やブラウザ整理の前に、JSONを保存してください。</p>
+            </div>
+            <div class="notice-actions">
+              <button class="secondary-action" type="button" data-nav="backup">バックアップへ</button>
+              <button class="small-button" type="button" id="dismiss-backup-reminder">あとで</button>
+            </div>
+          </section>
+
+          <details class="info-panel install-guide">
+            <summary>ホーム画面に追加する</summary>
+            <p>iPhoneはSafariの共有ボタンから「ホーム画面に追加」。AndroidはChromeのメニューから「アプリをインストール」または「ホーム画面に追加」を選びます。</p>
+          </details>
+        </div>
+
         <div class="home-grid" aria-label="メニュー">
           <button class="menu-button primary" type="button" data-nav="record">
             <span>今日の記録</span>
@@ -80,6 +98,7 @@
         </div>
 
         <form id="practice-form" class="stack">
+          <p class="notice editing-notice" id="editing-notice" hidden>記録を編集中です。保存すると、この記録を更新します。</p>
           <div class="field-grid">
             <label class="field">
               <span>日付</span>
@@ -166,8 +185,9 @@
           </label>
 
           <div class="sticky-actions">
-            <button class="main-action" type="submit">保存</button>
+            <button class="main-action" type="submit" id="practice-save-button">保存</button>
             <button class="secondary-action" type="button" id="prompt-from-form">AI相談文作成</button>
+            <button class="small-button" type="button" id="cancel-edit" hidden>編集をやめる</button>
           </div>
           <p class="status-message" id="record-status" role="status"></p>
         </form>
@@ -180,10 +200,18 @@
         </div>
 
         <div class="stack">
-          <label class="file-picker">
-            <input id="sheet-image" type="file" accept="image/*" capture="environment">
-            <span>カメラで撮る / 画像を選ぶ</span>
-          </label>
+          <p class="notice">読み取りがうまくいかない時は、いつでも手入力に戻れます。</p>
+          <div class="two-actions">
+            <label class="file-picker">
+              <input id="sheet-image" type="file" accept="image/*" capture="environment">
+              <span>カメラで撮る</span>
+            </label>
+            <label class="file-picker compact">
+              <input id="sheet-image-library" type="file" accept="image/*">
+              <span>保存済み画像を選ぶ</span>
+            </label>
+          </div>
+          <button class="secondary-action full" type="button" data-nav="record">手入力で記録する</button>
 
           <div class="image-preview" id="image-preview-wrap">
             <img id="sheet-preview" alt="選択したスコアシート画像">
@@ -209,6 +237,7 @@
           </section>
 
           <button class="main-action" type="button" id="run-ocr">読み取り開始</button>
+          <button class="secondary-action full" type="button" data-nav="record">読み取れないので手入力する</button>
           <p class="status-message" id="ocr-status" role="status"></p>
 
           <details class="raw-box">
@@ -422,6 +451,20 @@
         </div>
       </section>
     </main>
+
+    <section class="welcome-modal" id="welcome-modal" hidden aria-labelledby="welcome-title" role="dialog" aria-modal="true">
+      <div class="welcome-card">
+        <p class="eyebrow">はじめに</p>
+        <h2 id="welcome-title">このアプリの使い方</h2>
+        <div class="welcome-steps">
+          <p><strong>1. 今日の記録</strong><br>スコア、残ったピン、調子を保存します。</p>
+          <p><strong>2. AIに相談</strong><br>ChatGPTに貼り付ける文章を作れます。</p>
+          <p><strong>3. バックアップ</strong><br>記録は端末内に保存されます。時々JSONで保存してください。</p>
+        </div>
+        <p class="hint">ホーム画面に追加すると、スマホアプリのように開けます。</p>
+        <button class="main-action full" type="button" id="close-welcome">使い始める</button>
+      </div>
+    </section>
 
     <nav class="bottom-nav" aria-label="下部メニュー">
       <button type="button" data-nav="home" aria-current="page">ホーム</button>

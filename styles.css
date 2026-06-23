@@ -167,6 +167,48 @@ button {
   gap: 12px;
 }
 
+.home-notices {
+  display: grid;
+  gap: 12px;
+  margin: 0 0 14px;
+}
+
+.info-panel {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: 0 5px 18px rgba(12, 53, 48, 0.06);
+}
+
+.info-panel h3,
+.info-panel p {
+  margin: 0;
+}
+
+.info-panel h3 {
+  font-size: 1rem;
+}
+
+.info-panel p {
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.info-panel summary {
+  color: var(--brand-dark);
+  cursor: pointer;
+  font-weight: 900;
+}
+
+.notice-actions {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+}
+
 .menu-button {
   display: flex;
   align-items: center;
@@ -399,6 +441,10 @@ button {
   backdrop-filter: blur(12px);
 }
 
+.editing-notice[hidden] {
+  display: none;
+}
+
 .main-action,
 .secondary-action {
   min-height: 56px;
@@ -618,6 +664,30 @@ button {
   gap: 7px;
 }
 
+.record-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.comment-details {
+  padding: 10px 12px;
+  background: #f8fbfb;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.comment-details summary {
+  color: var(--brand-dark);
+  cursor: pointer;
+  font-weight: 900;
+}
+
+.comment-details p {
+  margin-top: 8px;
+  white-space: pre-wrap;
+}
+
 .score-chip {
   display: inline-grid;
   place-items: center;
@@ -728,6 +798,46 @@ button {
 .bottom-nav button[aria-current="page"] {
   background: var(--brand-soft);
   color: var(--brand-dark);
+}
+
+.welcome-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(8, 31, 29, 0.45);
+}
+
+.welcome-modal[hidden] {
+  display: none;
+}
+
+.welcome-card {
+  display: grid;
+  gap: 14px;
+  width: min(100%, 420px);
+  padding: 18px;
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.welcome-card h2,
+.welcome-card p {
+  margin: 0;
+}
+
+.welcome-steps {
+  display: grid;
+  gap: 10px;
+}
+
+.welcome-steps p {
+  padding: 10px 12px;
+  background: var(--surface-strong);
+  border-radius: var(--radius);
 }
 
 @media (min-width: 560px) {

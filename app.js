@@ -1,6 +1,9 @@
 const STORAGE_KEYS = {
   records: "bowlingPracticeRecords:v1",
-  balls: "bowlingPracticeBalls:v1"
+  balls: "bowlingPracticeBalls:v1",
+  introSeen: "bowlingPracticeIntroSeen:v1",
+  lastJsonBackupAt: "bowlingPracticeLastJsonBackupAt:v1",
+  backupReminderDismissedOn: "bowlingPracticeBackupReminderDismissedOn:v1"
 };
 
 const TESSERACT_LOCAL_PATHS = {
@@ -20,6 +23,7 @@ const state = {
   selectedScreen: "home",
   selectedAiMode: "today",
   restoreMode: "merge",
+  editingRecordId: null,
   currentImage: null,
   pendingOcr: null
 };
@@ -34,6 +38,7 @@ function init() {
   fillPracticeDefaults();
   renderAll();
   showScreen("home");
+  showWelcomeIfNeeded();
   registerServiceWorker();
 }
 
@@ -48,6 +53,12 @@ function bindEvents() {
     const deleteRecord = event.target.closest("[data-delete-record]");
     if (deleteRecord) {
       removeRecord(deleteRecord.dataset.deleteRecord);
+      return;
+    }
+
+    const editRecord = event.target.closest("[data-edit-record]");
+    if (editRecord) {
+      beginEditRecord(editRecord.dataset.editRecord);
       return;
     }
 
@@ -67,6 +78,7 @@ function bindEvents() {
   document.getElementById("add-score").addEventListener("click", addPracticeScoreInput);
   document.getElementById("clear-pins").addEventListener("click", clearPins);
   document.getElementById("prompt-from-form").addEventListener("click", buildPromptFromForm);
+  document.getElementById("cancel-edit").addEventListener("click", cancelEditRecord);
 
   document.getElementById("pin-deck").addEventListener("click", (event) => {
     const button = event.target.closest("button[data-pin]");
@@ -84,6 +96,7 @@ function bindEvents() {
   });
 
   document.getElementById("sheet-image").addEventListener("change", handleImageSelection);
+  document.getElementById("sheet-image-library").addEventListener("change", handleImageSelection);
   document.getElementById("apply-image").addEventListener("click", () => {
     if (drawProcessedImage()) setStatus("ocr-status", "画像を調整しました。");
   });
@@ -118,6 +131,8 @@ function bindEvents() {
     selectOne(button, "#restore-mode button");
   });
   document.getElementById("restore-data").addEventListener("click", restoreData);
+  document.getElementById("close-welcome").addEventListener("click", closeWelcome);
+  document.getElementById("dismiss-backup-reminder").addEventListener("click", dismissBackupReminder);
 }
 
 function loadState() {
@@ -299,7 +314,7 @@ function readScores(containerId) {
   return { scores, errors };
 }
 
-function collectPracticeForm(allowEmptyScores = false) {
+function collectPracticeForm(allowEmptyScores = false, existingRecord = null) {
   const scoreResult = readScores("score-inputs");
   const errors = [...scoreResult.errors];
   if (!allowEmptyScores && scoreResult.scores.length === 0) {
@@ -307,8 +322,8 @@ function collectPracticeForm(allowEmptyScores = false) {
   }
 
   const record = {
-    id: createId("record"),
-    createdAt: new Date().toISOString(),
+    id: existingRecord?.id || createId("record"),
+    createdAt: existingRecord?.createdAt || new Date().toISOString(),
     date: document.getElementById("practice-date").value || todayString(),
     venue: cleanText(document.getElementById("practice-venue").value),
     lane: cleanText(document.getElementById("practice-lane").value),
@@ -318,8 +333,8 @@ function collectPracticeForm(allowEmptyScores = false) {
     tags: getSelectedValues("#tag-buttons button.is-selected", "tag"),
     condition: document.querySelector("#condition-buttons button.is-selected")?.dataset.condition || "普通",
     memo: cleanText(document.getElementById("practice-memo").value),
-    source: "manual",
-    aiComment: ""
+    source: existingRecord?.source || "manual",
+    aiComment: existingRecord?.aiComment || ""
   };
 
   return { record: sanitizeRecord(record), errors };
@@ -327,16 +342,25 @@ function collectPracticeForm(allowEmptyScores = false) {
 
 function savePracticeRecord(event) {
   event.preventDefault();
-  const { record, errors } = collectPracticeForm();
+  const editingRecord = state.editingRecordId
+    ? state.records.find((item) => item.id === state.editingRecordId)
+    : null;
+  const { record, errors } = collectPracticeForm(false, editingRecord);
   if (errors.length) {
     setStatus("record-status", errors[0], true);
     return;
   }
 
-  state.records.push(record);
+  if (editingRecord) {
+    const ok = window.confirm("この内容で記録を更新します。よろしいですか？");
+    if (!ok) return;
+    state.records = state.records.map((item) => item.id === editingRecord.id ? record : item);
+  } else {
+    state.records.push(record);
+  }
   saveState();
   renderAll();
-  setStatus("record-status", "保存しました。");
+  setStatus("record-status", editingRecord ? "更新しました。" : "保存しました。");
   resetPracticeForm();
 }
 
@@ -348,6 +372,70 @@ function resetPracticeForm() {
   document.querySelectorAll("#tag-buttons button").forEach((button) => button.classList.remove("is-selected"));
   selectOne(document.querySelector("#condition-buttons button[data-condition='普通']"), "#condition-buttons button");
   renderBallOptions();
+  state.editingRecordId = null;
+  updateRecordEditUi();
+}
+
+function beginEditRecord(id) {
+  const record = state.records.find((item) => item.id === id);
+  if (!record) return;
+
+  state.editingRecordId = id;
+  showScreen("record");
+  renderBallOptions();
+  ensureBallOption(record.ballName);
+  document.getElementById("practice-date").value = record.date || todayString();
+  document.getElementById("practice-venue").value = record.venue || "";
+  document.getElementById("practice-lane").value = record.lane || "";
+  document.getElementById("practice-ball").value = record.ballName || "";
+  renderPracticeScoreInputs(record.scores.length ? record.scores.map(String) : ["", "", "", ""]);
+
+  clearPins();
+  record.pins.forEach((pin) => {
+    const button = document.querySelector(`#pin-deck button[data-pin="${pin}"]`);
+    if (button) {
+      button.classList.add("is-selected");
+      button.setAttribute("aria-pressed", "true");
+    }
+  });
+
+  document.querySelectorAll("#tag-buttons button").forEach((button) => {
+    const isSelected = record.tags.includes(button.dataset.tag);
+    button.classList.toggle("is-selected", isSelected);
+    button.setAttribute("aria-pressed", isSelected ? "true" : "false");
+  });
+
+  const conditionButton = Array.from(document.querySelectorAll("#condition-buttons button"))
+    .find((button) => button.dataset.condition === (record.condition || "普通"))
+    || document.querySelector("#condition-buttons button[data-condition='普通']");
+  selectOne(conditionButton, "#condition-buttons button");
+  document.getElementById("practice-memo").value = record.memo || "";
+  updateRecordEditUi();
+  setStatus("record-status", "編集する内容を確認してください。");
+}
+
+function cancelEditRecord() {
+  state.editingRecordId = null;
+  resetPracticeForm();
+  setStatus("record-status", "編集をやめました。");
+}
+
+function updateRecordEditUi() {
+  const editing = Boolean(state.editingRecordId);
+  document.getElementById("record-title").textContent = editing ? "記録を編集" : "今日の記録";
+  document.getElementById("practice-save-button").textContent = editing ? "更新する" : "保存";
+  document.getElementById("editing-notice").hidden = !editing;
+  document.getElementById("cancel-edit").hidden = !editing;
+}
+
+function ensureBallOption(ballName) {
+  if (!ballName) return;
+  const select = document.getElementById("practice-ball");
+  if (Array.from(select.options).some((option) => option.value === ballName)) return;
+  const option = document.createElement("option");
+  option.value = ballName;
+  option.textContent = ballName;
+  select.appendChild(option);
 }
 
 function getSelectedValues(selector, dataName) {
@@ -397,6 +485,37 @@ function renderVenueOptions() {
 function renderHome() {
   const allScores = state.records.flatMap((record) => record.scores);
   document.getElementById("home-average").textContent = allScores.length ? Math.round(average(allScores)) : "--";
+  document.getElementById("backup-reminder").hidden = !shouldShowBackupReminder();
+}
+
+function showWelcomeIfNeeded() {
+  if (localStorage.getItem(STORAGE_KEYS.introSeen) === "1") return;
+  document.getElementById("welcome-modal").hidden = false;
+}
+
+function closeWelcome() {
+  localStorage.setItem(STORAGE_KEYS.introSeen, "1");
+  document.getElementById("welcome-modal").hidden = true;
+}
+
+function shouldShowBackupReminder() {
+  if (!state.records.length) return false;
+  if (localStorage.getItem(STORAGE_KEYS.backupReminderDismissedOn) === todayString()) return false;
+  const lastBackup = localStorage.getItem(STORAGE_KEYS.lastJsonBackupAt);
+  if (!lastBackup) return true;
+  return daysBetween(lastBackup, todayString()) >= 14;
+}
+
+function dismissBackupReminder() {
+  localStorage.setItem(STORAGE_KEYS.backupReminderDismissedOn, todayString());
+  renderHome();
+}
+
+function daysBetween(fromDate, toDate) {
+  const from = new Date(`${fromDate}T00:00:00`);
+  const to = new Date(`${toDate}T00:00:00`);
+  if (Number.isNaN(from.getTime()) || Number.isNaN(to.getTime())) return 999;
+  return Math.floor((to - from) / 86400000);
 }
 
 function renderHistory() {
@@ -414,7 +533,12 @@ function renderHistory() {
     const pins = record.pins.length ? `${record.pins.join("・")}ピン` : "なし";
     const tags = record.tags.length ? record.tags.join(" / ") : "なし";
     const comment = record.aiComment
-      ? `<p><strong>AIコーチコメント：</strong>${escapeHtml(record.aiComment)}</p>`
+      ? `
+        <details class="comment-details">
+          <summary>AIコーチコメントを見る</summary>
+          <p>${escapeHtml(record.aiComment)}</p>
+        </details>
+      `
       : "";
     return `
       <article class="record-card">
@@ -423,13 +547,16 @@ function renderHistory() {
             <h3>${formatDate(record.date)} ${escapeHtml(record.venue || "")}</h3>
             <p>${escapeHtml(record.ballName || "ボール未選択")} / 調子：${escapeHtml(record.condition || "普通")}</p>
           </div>
-          <button class="danger-button" type="button" data-delete-record="${escapeHtml(record.id)}">削除</button>
         </header>
         <div class="score-line">${scoreChips}</div>
         <p>残りピン：${escapeHtml(pins)}</p>
         <p>ミス傾向：${escapeHtml(tags)}</p>
         ${record.memo ? `<p>メモ：${escapeHtml(record.memo)}</p>` : ""}
         ${comment}
+        <div class="record-actions">
+          <button class="secondary-action" type="button" data-edit-record="${escapeHtml(record.id)}">編集</button>
+          <button class="danger-button" type="button" data-delete-record="${escapeHtml(record.id)}">削除</button>
+        </div>
         <button class="secondary-action full" type="button" data-prompt-record="${escapeHtml(record.id)}">この記録で相談文を作る</button>
       </article>
     `;
@@ -902,7 +1029,7 @@ async function runOcr() {
     showScreen("ocr-confirm");
   } catch (error) {
     console.error(error);
-    setStatus("ocr-status", "読み取りに失敗しました。手入力または画像を撮り直してください。", true);
+    setStatus("ocr-status", "読み取りに失敗しました。下のボタンから手入力に戻れます。画像を選び直すこともできます。", true);
   } finally {
     button.disabled = false;
   }
@@ -1021,6 +1148,8 @@ function exportJson() {
     balls: state.balls
   };
   downloadText(`bowling-backup-${todayString()}.json`, JSON.stringify(payload, null, 2), "application/json");
+  localStorage.setItem(STORAGE_KEYS.lastJsonBackupAt, todayString());
+  renderHome();
 }
 
 function exportCsv() {
